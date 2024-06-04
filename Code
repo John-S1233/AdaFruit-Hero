@@ -1,0 +1,117 @@
+#include <Adafruit_CircuitPlayground.h>
+#include <AsyncDelay.h>
+#include <string>
+#include <iostream>
+using namespace std;
+
+enum GameState { Home, InProgress, End };
+GameState currentState = Home;
+enum SongName { HotCross, SandMan };
+SongName currentSong = HotCross;
+
+bool leftFlag = false, rightFlag = false,printed = false;
+string SongArray;
+AsyncDelay exampleDelay;
+
+void setup() {
+  Serial.begin(9600);
+  CircuitPlayground.begin();
+  attachInterrupt(digitalPinToInterrupt(4), leftButton, RISING);
+  attachInterrupt(digitalPinToInterrupt(5), rightButton, RISING);
+  exampleDelay.start(1000, AsyncDelay::MILLIS);
+}
+
+//{duration, pitch, strip}
+int HotCrossSong[1][3] = {500,50,1};
+int SandManSong[1][3] = {500,50,1};
+void loop() {
+  switch (currentState) {
+    case Home:
+      if (printed = false){
+        Serial.println("test");
+        printed = true;
+      }
+      if (leftFlag || rightFlag) {
+        delay(200);
+        if (leftFlag && rightFlag) {
+          Serial.print("Game Starting In: ");
+          leftFlag = false;
+          rightFlag = false;
+          changeState(InProgress);
+        } else {
+          if (leftFlag) {
+            //lines 44 & 49 from GPT 4.0
+            currentSong = static_cast<SongName>((currentSong - 1 + 2) % 2); 
+            leftFlag = false;
+            delay(200);
+          }
+          if (rightFlag) {
+            currentSong = static_cast<SongName>((currentSong + 1) % 2); 
+            rightFlag = false;
+            delay(200);
+          }
+          displaySongs();
+          Serial.println();
+        }
+      }
+      break;
+    case InProgress:
+      //Flash Green Countdown
+      for (int i = 5; i > 0; i--) {
+        for (int i = 0; i < 10; i++) {
+          CircuitPlayground.setPixelColor(i,0,255,0);
+        }
+        Serial.print(i); Serial.print(" ");
+        delay(1000);
+        CircuitPlayground.clearPixels();
+        delay(1000);
+      }
+
+      //Song Array Traversal
+
+      break;
+    case End:
+      break;
+  }
+}
+
+void displaySongs() {
+  
+  for (int i = HotCross; i <= SandMan; i++) {
+    if (i == currentSong) {
+      Serial.print("[");
+    }
+    switch(i) {
+      case HotCross: Serial.print("Hot Cross Buns"); ;break;
+      case SandMan: Serial.print("Enter Sandman"); break;
+    }
+    if (i == currentSong) {
+      Serial.print("]");
+    }
+    Serial.print(", ");  // Use comma to separate songs
+  }
+}
+
+void changeState(GameState state) {
+  switch(state) {
+    case Home:
+      printed = false;
+      currentState = Home;
+      break;
+    case InProgress:
+      currentState = InProgress;
+      break;
+    case End:
+      currentState = End;
+      break;
+  }
+}
+
+void leftButton() {
+  leftFlag = true;
+}
+
+void rightButton() {
+  rightFlag = true;
+}
+
