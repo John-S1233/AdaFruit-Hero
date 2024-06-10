@@ -3,7 +3,7 @@
 ## Game Description
 This project is an interactive music game inspired by Guitar Hero, where players respond to descending lights by pressing corresponding buttons. The game features three primary states:
 
-- **Home**: Introduces the game rules and allows the selection of songs.
+- **Home**: Allows the selection of songs.
 - **Playing**: Plays the selected song and displays cascading pixels.
 - **End**: Displays the final score and offers the option to continue playing.
 
@@ -16,10 +16,15 @@ This project is an interactive music game inspired by Guitar Hero, where players
 - **Left Button**: Trigger the note associated with the left LED string.
 - **Right Button**: Trigger the note associated with the right LED string.
 
+### Inputs (While Home)
+- **Left Button**: Shifts selection left.
+- **Right Button**: Shifts selection right.
+- **Right & Left Button**: Selects song.
+
 ### Outputs 
 - **Left LEDs**: Illuminate descending pixels on the left.
 - **Right LEDs**: Illuminate descending pixels on the right.
-- **Speaker**: Plays back the musical notes of the chosen song.
+- **Speaker**: Plays back the musical notes of the chosen song and says message at the end of game. 
 - **Serial Monitor**: Displays song selection and score.
 
 ## Hardware Requirements
@@ -34,8 +39,8 @@ This project is an interactive music game inspired by Guitar Hero, where players
 
 ### Game Songs
 - **Hot Cross Buns**
-- **Enter Sandman**
-- **More In Development**
+- **Twinkle Twinkle Little Star**
+- **Mary Had A Little Lamb**
 
 Each song has defined properties for duration, pitch, and associated LED strip.
 
