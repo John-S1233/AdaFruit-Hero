@@ -6,7 +6,6 @@ const uint8_t spFAIL[] PROGMEM = {0x04,0x98,0x3E,0x8D,0x03,0x1C,0xD0,0x80,0x07,0
 uint8_t spPASS[] PROGMEM = {0x0A,0xC8,0x33,0x83,0x03,0xA3,0xEC,0x55,0x2D,0xD4,0x12,0xAF,0xAA,0x04,0xC9,0xD4,0x0E,0x7D,0xAA,0x16,0x4A,0x33,0x65,0xCE,0xAD,0x6F,0x7D,0x9A,0x9A,0xDC,0xDB,0x62,0xEE,0x6D,0x6E,0x73,0xC6,0x12,0xDD,0x5B,0x6B,0xEE,0x5D,0xF6,0x3A,0xCE,0xAA,0xD2,0x26,0xED,0x75,0xBB,0x9B,0x4D,0x6D,0xF1,0x25,0xFD,0x77,0x7F,0xEF,0xD2,0xCE,0x9D,0x46,0x00,0x4B,0x17,0x2B,0xE0,0x8F,0x52,0x0B,0x68,0x40,0x02,0x1C,0x90,0xC0,0xFF,0x03};
 enum GameState { Home, InProgress, End };
 GameState currentState = Home;
-//GameState currentState = InProgress;
 enum SongName { HotCross, Twinkle, LittleLamb};
 SongName currentSong = HotCross;
 
@@ -17,6 +16,7 @@ void setup() {
   CircuitPlayground.begin();
   attachInterrupt(digitalPinToInterrupt(4), leftButton, RISING);
   attachInterrupt(digitalPinToInterrupt(5), rightButton, RISING);
+  Serial.println("Press a button to begin.");
 }
 
 struct Song {
@@ -94,6 +94,7 @@ Song MaryHadALittleLamb[] = {
 
 void loop() {
   switch (currentState) {
+    //This case takes user input from buttons and selects a song. 
     case Home:
       if (leftFlag || rightFlag) {
         delay(200);
@@ -119,6 +120,7 @@ void loop() {
       }
       break;
     case InProgress:
+      //Countdown from 5
       for(int i = 5; i > 0; i--) {
         Serial.print(i); Serial.print(" ");
         for (int j = 0; j < 10; j++) {
@@ -128,32 +130,35 @@ void loop() {
         CircuitPlayground.clearPixels();
         delay(500);
       }
-
+      //This switch handles array traversal for all three songs, every case has same functionality with different arrays
       switch(currentSong) {
         case HotCross:
           for (int i = 0; i < sizeof(HotCrossBuns) / sizeof(HotCrossBuns[0]); i++) {
             int startLed, endLed, step;
             if (HotCrossBuns[i].useSecondStrip) {
+              // Count backwards on the second strip
               startLed = 9;
               endLed = 5;
-              step = -1; // Count backwards on the second strip
+              step = -1; 
             } else {
+              // Count forwards on the first strip
               startLed = 0;
               endLed = 4;
-              step = 1; // Count forwards on the first strip
+              step = 1; 
             }
             // Animate LEDs from start to end
             for (int led = startLed; step == 1 ? led <= endLed : led >= endLed; led += step) {
-              CircuitPlayground.setPixelColor(led, 255, 0, 0); // Display red color
+              CircuitPlayground.setPixelColor(led, 255, 0, 0);
               delay(HotCrossBuns[i].delay / (abs(endLed - startLed) + 1)); // Divide total delay by number of LEDs
               CircuitPlayground.clearPixels();
             }
-          //delay(HotCrossBuns[i].delay);
+          //Note Start Time
           int noteStartTime = millis();
           CircuitPlayground.playTone(HotCrossBuns[i].frequency, HotCrossBuns[i].delay); // Play the tone for the duration of the note
+          //Note End Time
           int noteEndTime = millis();
 
-          // Check button press timing
+          //Lines 163-176 are for scoring
           bool isLeftNote = !HotCrossBuns[i].useSecondStrip;
           if (isLeftNote) {
             if (lastLeftButton >= noteStartTime - scoreThresh && lastLeftButton <= noteEndTime + scoreThresh) {
@@ -260,6 +265,7 @@ void loop() {
     changeState(End);  
     break;
     case End:
+      //this statement ensures this is only ran once
       if (!endStart) {
         delay(100);
         Serial.println("====================================================");
@@ -280,7 +286,7 @@ void loop() {
           leftFlag = false;
           rightFlag = false;
           for(int i = 5; i > 0; i--) {
-            Serial.print(i); Serial.print(" ");
+            //Serial.print(i); Serial.print(" ");
             for (int j = 0; j < 10; j++) {
               CircuitPlayground.setPixelColor(j,0,255,0);
             }
@@ -294,6 +300,7 @@ void loop() {
   }
 }
 
+//This function displays the song selection in the serial monitor
 void displaySongs() {
   for (int i = HotCross; i <= LittleLamb; i++) {
     if (i == currentSong) {
@@ -311,6 +318,7 @@ void displaySongs() {
   }
 }
 
+//This function handles state changes
 void changeState(GameState state) {
   switch(state) {
     case Home:
